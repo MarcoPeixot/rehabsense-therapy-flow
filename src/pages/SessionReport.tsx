@@ -188,19 +188,19 @@ export default function SessionReport() {
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-2">Força Média</p>
                 <div className="text-4xl font-bold text-primary">
-                  {report.overallPerformance.avgForce.toFixed(1)}%
+                  {report.overallPerformance?.avgForce?.toFixed(1) || '0.0'}%
                 </div>
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-2">Consistência</p>
                 <div className="text-4xl font-bold text-secondary">
-                  {(report.overallPerformance.consistency * 100).toFixed(0)}%
+                  {((report.overallPerformance?.consistency || 0) * 100).toFixed(0)}%
                 </div>
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-2">Taxa de Conclusão</p>
                 <div className="text-4xl font-bold text-success">
-                  {(report.overallPerformance.completionRate * 100).toFixed(0)}%
+                  {((report.overallPerformance?.completionRate || 0) * 100).toFixed(0)}%
                 </div>
               </div>
             </div>
@@ -216,7 +216,8 @@ export default function SessionReport() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {report.exerciseDetails.map((exercise, index) => (
+            {report.exerciseDetails && report.exerciseDetails.length > 0 ? (
+              report.exerciseDetails.map((exercise, index) => (
               <div key={index} className="border rounded-lg p-4 space-y-3">
                 <div className="flex items-start justify-between">
                   <div>
@@ -263,12 +264,17 @@ export default function SessionReport() {
                   </div>
                 )}
               </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Nenhum detalhe de exercício disponível
+              </p>
+            )}
           </CardContent>
         </Card>
 
         {/* Recommendations */}
-        {report.recommendations.length > 0 && (
+        {report.recommendations && report.recommendations.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle>Recomendações</CardTitle>

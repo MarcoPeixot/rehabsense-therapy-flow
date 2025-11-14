@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ApiClient } from '@/lib/api';
 import { toast } from 'sonner';
-import { Play, Pause, SkipForward, CheckCircle, Activity } from 'lucide-react';
+import { Play, Pause, SkipForward, CheckCircle, Activity, XCircle } from 'lucide-react';
 import { SensorMonitor } from '@/components/SensorMonitor';
+import { BluetoothConnection } from '@/components/BluetoothConnection';
+import { SensorData } from '@/services/bluetooth';
 
 interface Exercise {
   id: number;
@@ -43,6 +45,8 @@ export default function SessionExecution() {
   const [currentRep, setCurrentRep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [sensorData, setSensorData] = useState<any>(null);
+  const [bluetoothConnected, setBluetoothConnected] = useState(false);
+  const [sensorReadings, setSensorReadings] = useState<SensorData[]>([]);
 
   useEffect(() => {
     loadSession();
@@ -67,11 +71,13 @@ export default function SessionExecution() {
   const loadSession = async () => {
     try {
       const data = await ApiClient.getSession(Number(id)) as Session;
-      setSession(data);
-      
+
       if (data.status === 'scheduled') {
         await ApiClient.startSession(Number(id));
-        setSession({ ...data, status: 'in_progress' });
+        const updatedData = { ...data, status: 'in_progress' };
+        setSession(updatedData);
+      } else {
+        setSession(data);
       }
     } catch (error) {
       toast.error('Erro ao carregar sessão');
@@ -160,7 +166,7 @@ export default function SessionExecution() {
 
   const handleSensorData = async (data: any) => {
     setSensorData(data);
-    
+
     // Salvar leitura do sensor
     try {
       await ApiClient.saveSensorReading(
@@ -170,6 +176,24 @@ export default function SessionExecution() {
       );
     } catch (error) {
       console.error('Erro ao salvar leitura do sensor:', error);
+    }
+  };
+
+  const handleBluetoothSensorUpdate = (data: SensorData) => {
+    // Adiciona leitura ao array
+    setSensorReadings(prev => [...prev, data]);
+
+    // Atualiza dados do sensor para métricas
+    setSensorData({
+      avgForce: (data.polegar + data.indicador + data.medio + data.anular + data.mindinho) / 5,
+      maxForce: Math.max(data.polegar, data.indicador, data.medio, data.anular, data.mindinho),
+      minForce: Math.min(data.polegar, data.indicador, data.medio, data.anular, data.mindinho),
+      ...data
+    });
+
+    // Salvar leitura do sensor no backend SOMENTE se exercício estiver rodando E sessão em andamento
+    if (isExercising && currentExercise && session?.status === 'in_progress') {
+      handleSensorData(data);
     }
   };
 
@@ -190,29 +214,89 @@ export default function SessionExecution() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Execução da Sessão</h1>
-          <p className="text-muted-foreground">
-            Paciente: {session.paciente.name} - {session.paciente.condition}
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Execução da Sessão</h1>
+            <p className="text-muted-foreground">
+              Paciente: {session.paciente.name} • {session.paciente.age} anos • {session.paciente.condition}
+            </p>
+          </div>
+          <Button variant="outline" onClick={() => navigate('/sessions')}>
+            Voltar
+          </Button>
         </div>
 
-        {/* Progress */}
-        <Card>
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Coluna Esquerda - Bluetooth e Progresso */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Bluetooth Connection */}
+            <BluetoothConnection
+              onSensorUpdate={handleBluetoothSensorUpdate}
+              onConnectionChange={setBluetoothConnected}
+            />
+
+            {/* Progress */}
+            <Card>
           <CardHeader>
             <CardTitle>Progresso da Sessão</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Exercício {currentExerciseIndex + 1} de {session.exerciseResults.length}</span>
-              <span>{Math.round(progress)}%</span>
-            </div>
-            <Progress value={progress} />
-          </CardContent>
-        </Card>
+              <CardContent className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Exercício {currentExerciseIndex + 1} de {session.exerciseResults.length}</span>
+                  <span>{Math.round(progress)}%</span>
+                </div>
+                <Progress value={progress} />
+              </CardContent>
+            </Card>
 
-        {/* Current Exercise */}
-        <Card>
+            {/* Lista de Exercícios */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Exercícios da Sessão</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {session.exerciseResults.map((result, index) => (
+                    <div
+                      key={result.id}
+                      className={`p-3 rounded-lg border ${
+                        index === currentExerciseIndex
+                          ? 'border-primary bg-primary/5'
+                          : result.status === 'completed'
+                          ? 'border-success bg-success/5'
+                          : result.status === 'skipped'
+                          ? 'border-muted'
+                          : 'border-border'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-sm">{result.exercise.nome}</p>
+                          <p className="text-xs text-muted-foreground capitalize">
+                            {result.exercise.tipoGripe} • {result.exercise.segDuracao}s • {result.exercise.repeticoes}x
+                          </p>
+                        </div>
+                        {result.status === 'completed' && (
+                          <CheckCircle className="h-4 w-4 text-success" />
+                        )}
+                        {result.status === 'skipped' && (
+                          <XCircle className="h-4 w-4 text-muted-foreground" />
+                        )}
+                        {index === currentExerciseIndex && (
+                          <Activity className="h-4 w-4 text-primary animate-pulse" />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Coluna Direita - Exercício Atual */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Current Exercise */}
+            <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
@@ -290,6 +374,61 @@ export default function SessionExecution() {
             onDataUpdate={handleSensorData}
           />
         )}
+
+        {/* Real-time Sensor Data Display */}
+        {bluetoothConnected && sensorData && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Dados dos Sensores em Tempo Real</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Polegar</p>
+                  <p className="text-2xl font-bold text-primary">{sensorData.polegar}%</p>
+                  <Progress value={sensorData.polegar} className="mt-2" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Indicador</p>
+                  <p className="text-2xl font-bold text-primary">{sensorData.indicador}%</p>
+                  <Progress value={sensorData.indicador} className="mt-2" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Médio</p>
+                  <p className="text-2xl font-bold text-primary">{sensorData.medio}%</p>
+                  <Progress value={sensorData.medio} className="mt-2" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Anular</p>
+                  <p className="text-2xl font-bold text-primary">{sensorData.anular}%</p>
+                  <Progress value={sensorData.anular} className="mt-2" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Mindinho</p>
+                  <p className="text-2xl font-bold text-primary">{sensorData.mindinho}%</p>
+                  <Progress value={sensorData.mindinho} className="mt-2" />
+                </div>
+              </div>
+
+              <div className="mt-6 grid grid-cols-3 gap-4 pt-4 border-t">
+                <div>
+                  <p className="text-sm text-muted-foreground">Força Média</p>
+                  <p className="text-xl font-bold">{sensorData.avgForce?.toFixed(1)}%</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Força Máxima</p>
+                  <p className="text-xl font-bold">{sensorData.maxForce}%</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Força Mínima</p>
+                  <p className="text-xl font-bold">{sensorData.minForce}%</p>
+                </div>
+              </div>
+              </CardContent>
+            </Card>
+          )}
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   );

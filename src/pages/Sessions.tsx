@@ -94,34 +94,14 @@ export default function Sessions() {
     }
   };
 
-  const handleStartSession = async (id: number) => {
-    try {
-      await ApiClient.startSession(id);
-      toast({
-        title: 'Sessão iniciada!',
-      });
-      loadData();
-    } catch (error) {
-      toast({
-        title: 'Erro ao iniciar sessão',
-        variant: 'destructive',
-      });
-    }
+  const handleStartSession = (id: number) => {
+    // Navega para a página de execução da sessão
+    navigate(`/sessions/${id}/execute`);
   };
 
-  const handleCompleteSession = async (id: number) => {
-    try {
-      await ApiClient.completeSession(id);
-      toast({
-        title: 'Sessão concluída!',
-      });
-      loadData();
-    } catch (error) {
-      toast({
-        title: 'Erro ao concluir sessão',
-        variant: 'destructive',
-      });
-    }
+  const handleViewReport = (id: number) => {
+    // Navega para o relatório da sessão
+    navigate(`/sessions/${id}/report`);
   };
 
   const getStatusBadge = (status: string) => {
@@ -215,12 +195,13 @@ export default function Sessions() {
                 </div>
                 <div className="space-y-2">
                   <Label>Exercícios (opcional)</Label>
-                  <div className="max-h-40 space-y-2 overflow-y-auto rounded-md border border-input p-3">
-                    {exercises.map((exercise) => (
-                      <label
-                        key={exercise.id}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
+                  <div className="max-h-60 space-y-2 overflow-y-auto rounded-md border border-input p-3 bg-muted/30">
+                    {exercises.length > 0 ? (
+                      exercises.map((exercise) => (
+                        <label
+                          key={exercise.id}
+                          className="flex items-center gap-3 p-2 rounded-md hover:bg-background cursor-pointer transition-colors"
+                        >
                         <input
                           type="checkbox"
                           checked={formData.exerciseIds.includes(exercise.id.toString())}
@@ -239,11 +220,21 @@ export default function Sessions() {
                               });
                             }
                           }}
-                          className="rounded border-input"
+                          className="h-4 w-4 rounded border-input accent-primary"
                         />
-                        <span className="text-sm">{exercise.name}</span>
-                      </label>
-                    ))}
+                        <span className="text-sm text-foreground">
+                          {exercise.nome}
+                          <span className="text-xs text-muted-foreground ml-2">
+                            ({exercise.tipoGripe} • {exercise.segDuracao}s • {exercise.repeticoes}x)
+                          </span>
+                        </span>
+                        </label>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        Nenhum exercício disponível. Crie exercícios primeiro.
+                      </p>
+                    )}
                   </div>
                 </div>
                 <Button type="submit" className="w-full">
@@ -303,16 +294,26 @@ export default function Sessions() {
                           onClick={() => handleStartSession(session.id)}
                         >
                           <Play className="mr-1 h-3 w-3" />
-                          Iniciar
+                          Executar Sessão
                         </Button>
                       )}
                       {session.status === 'in_progress' && (
                         <Button
                           size="sm"
-                          onClick={() => handleCompleteSession(session.id)}
+                          onClick={() => handleStartSession(session.id)}
+                        >
+                          <Play className="mr-1 h-3 w-3" />
+                          Continuar
+                        </Button>
+                      )}
+                      {session.status === 'completed' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewReport(session.id)}
                         >
                           <CheckCircle className="mr-1 h-3 w-3" />
-                          Concluir
+                          Ver Relatório
                         </Button>
                       )}
                     </div>
