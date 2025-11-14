@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { AccessibilityButton } from '@/components/AccessibilityButton';
 import {
   Activity,
   LayoutDashboard,
@@ -36,6 +37,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="flex min-h-screen bg-muted/30">
+      {/* Skip to main content link for accessibility */}
+      <a href="#main-content" className="skip-to-content">
+        Pular para o conteúdo principal
+      </a>
+
       {/* Sidebar - Navigation menu for application */}
       <aside 
         className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-sidebar"
@@ -79,6 +85,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <p className="text-sm font-medium text-sidebar-foreground">{user?.name}</p>
               <p className="text-xs text-sidebar-foreground/70">{user?.email}</p>
             </div>
+
+            {/* Accessibility Controls */}
+            <div className="mb-3 space-y-2">
+              <AccessibilityButton />
+            </div>
+
             <Button
               variant="ghost"
               size="sm"
@@ -95,7 +107,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Main content */}
       <div className="ml-64 flex-1">
-        <main className="p-8" role="main" aria-label="Conteúdo principal">
+        <main id="main-content" className="p-8" role="main" aria-label="Conteúdo principal" tabIndex={-1}>
           {children}
         </main>
       </div>
