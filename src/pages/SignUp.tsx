@@ -58,7 +58,7 @@ export default function SignUp() {
             Comece a gerenciar seus pacientes de forma profissional
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" aria-label="Formulário de cadastro">
             <div className="space-y-2">
               <Label htmlFor="name">Nome completo</Label>
               <Input
@@ -68,7 +68,13 @@ export default function SignUp() {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
+                aria-required="true"
+                aria-describedby="name-description"
+                autoComplete="name"
               />
+              <span id="name-description" className="sr-only">
+                Digite seu nome completo
+              </span>
             </div>
 
             <div className="space-y-2">
@@ -80,7 +86,13 @@ export default function SignUp() {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
+                aria-required="true"
+                aria-describedby="email-description"
+                autoComplete="email"
               />
+              <span id="email-description" className="sr-only">
+                Digite seu endereço de email profissional
+              </span>
             </div>
 
             <div className="space-y-2">
@@ -92,7 +104,13 @@ export default function SignUp() {
                 value={formData.registerId}
                 onChange={(e) => setFormData({ ...formData, registerId: e.target.value })}
                 required
+                aria-required="true"
+                aria-describedby="register-description"
+                autoComplete="off"
               />
+              <span id="register-description" className="sr-only">
+                Digite seu número de registro profissional
+              </span>
             </div>
 
             <div className="space-y-2">
@@ -105,10 +123,22 @@ export default function SignUp() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
                 minLength={6}
+                aria-required="true"
+                aria-describedby="password-description"
+                autoComplete="new-password"
               />
+              <span id="password-description" className="text-xs text-muted-foreground">
+                Mínimo de 6 caracteres
+              </span>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button 
+              type="submit" 
+              className="w-full transition-all" 
+              disabled={loading}
+              aria-busy={loading}
+              aria-live="polite"
+            >
               {loading ? 'Criando conta...' : 'Criar conta'}
             </Button>
           </form>
