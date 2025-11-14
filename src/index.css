@@ -98,6 +98,35 @@ All colors MUST be HSL.
     --sidebar-border: 175 40% 20%;
     --sidebar-ring: 175 60% 60%;
   }
+
+  /* High Contrast Mode for Accessibility */
+  @media (prefers-contrast: high) {
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 0 0% 0%;
+      --border: 0 0% 20%;
+      --ring: 175 60% 35%;
+    }
+
+    .dark {
+      --background: 0 0% 0%;
+      --foreground: 0 0% 100%;
+      --border: 0 0% 80%;
+      --ring: 175 60% 70%;
+    }
+  }
+
+  /* Reduced Motion for Accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer base {
@@ -107,5 +136,29 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Screen reader only utility class */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  /* Focus visible for keyboard navigation */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* Skip to main content link (for accessibility) */
+  .skip-to-content {
+    @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50;
+    @apply bg-primary text-primary-foreground px-4 py-2 rounded-md;
   }
 }

@@ -326,7 +326,7 @@ class BluetoothService {
    * Handler para mudanças nos valores dos sensores
    */
   private handleSensorValueChanged(event: Event): void {
-    const target = event.target as BluetoothRemoteGATTCharacteristic;
+    const target = event.target as unknown as BluetoothRemoteGATTCharacteristic;
     if (target.value) {
       this.processSensorValue(target.value);
     }
