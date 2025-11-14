@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -172,6 +173,9 @@ export default function Sessions() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Agendar Nova Sessão</DialogTitle>
+                <DialogDescription>
+                  Crie uma nova sessão terapêutica para um paciente
+                </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
@@ -264,7 +268,7 @@ export default function Sessions() {
                           Sessão #{session.id}
                         </CardTitle>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(session.scheduledDate).toLocaleString('pt-BR')}
+                          {new Date(session.scheduledAt || session.scheduledDate).toLocaleString('pt-BR')}
                         </p>
                       </div>
                     </div>
@@ -273,10 +277,19 @@ export default function Sessions() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Paciente ID: {session.pacienteId}
-                      </p>
+                    <div className="space-y-2">
+                      {session.paciente && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">Paciente</p>
+                          <p className="font-medium">{session.paciente.name}</p>
+                        </div>
+                      )}
+                      {session.exerciseResults && session.exerciseResults.length > 0 && (
+                        <div>
+                          <p className="text-sm text-muted-foreground">Exercícios</p>
+                          <p className="font-medium">{session.exerciseResults.length} exercício(s)</p>
+                        </div>
+                      )}
                       {session.notes && (
                         <p className="mt-2 text-sm">{session.notes}</p>
                       )}

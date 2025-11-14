@@ -147,9 +147,12 @@ export default function Dashboard() {
                     className="flex items-center justify-between rounded-lg border border-border p-4"
                   >
                     <div>
-                      <p className="font-medium text-foreground">Sessão #{session.id}</p>
+                      <p className="font-medium text-foreground">
+                        Sessão #{session.id}
+                        {session.paciente && ` - ${session.paciente.name}`}
+                      </p>
                       <p className="text-sm text-muted-foreground">
-                        {new Date(session.scheduledDate).toLocaleDateString('pt-BR')}
+                        {new Date(session.scheduledAt || session.scheduledDate).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
                     <span

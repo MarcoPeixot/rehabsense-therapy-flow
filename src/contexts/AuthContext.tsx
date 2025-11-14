@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ApiClient } from '@/lib/api';
-import { useNavigate } from 'react-router-dom';
 
 interface User {
   id: number;
@@ -31,11 +30,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const token = ApiClient.getToken();
       if (token) {
-        const userData = await ApiClient.getMe();
-        setUser(userData);
+        try {
+          const userData = await ApiClient.getMe();
+          setUser(userData);
+        } catch (error) {
+          // Token inválido ou expirado, limpar
+          ApiClient.setToken(null);
+          setUser(null);
+        }
       }
     } catch (error) {
-      ApiClient.setToken(null);
+      console.error('Erro ao verificar autenticação:', error);
     } finally {
       setLoading(false);
     }
@@ -43,14 +48,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     const response = await ApiClient.signIn({ email, password });
-    ApiClient.setToken(response.access_token);
+    ApiClient.setToken(response.accessToken);
     const userData = await ApiClient.getMe();
     setUser(userData);
   };
 
   const signUp = async (data: { name: string; email: string; password: string; registerId: string }) => {
     const response = await ApiClient.signUp(data);
-    ApiClient.setToken(response.access_token);
+    ApiClient.setToken(response.accessToken);
     const userData = await ApiClient.getMe();
     setUser(userData);
   };

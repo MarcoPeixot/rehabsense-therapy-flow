@@ -48,14 +48,14 @@ export class ApiClient {
 
   // Auth
   static async signUp(data: { name: string; email: string; password: string; registerId: string }) {
-    return this.request<{ access_token: string }>('/auth/signup', {
+    return this.request<{ accessToken: string }>('/auth/signup', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
   static async signIn(data: { email: string; password: string }) {
-    return this.request<{ access_token: string }>('/auth/signin', {
+    return this.request<{ accessToken: string }>('/auth/signin', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -95,7 +95,18 @@ export class ApiClient {
   }
 
   // Exercícios
-  static async createExercise(data: { name: string; description: string; targetArea: string; duration: number; pacienteId: number }) {
+  static async createExercise(data: {
+    nome: string;
+    tipoGripe: 'pinça' | 'gancho' | 'esférica' | 'cilíndrica' | 'lateral';
+    segDuracao: number;
+    pctForca: number;
+    repeticoes: number;
+    segIntervalo?: number;
+    lado?: 'direita' | 'esquerda' | 'ambos';
+    observacoes?: string;
+    codigoDSL?: string;
+    pacienteId: number;
+  }) {
     return this.request('/exercises', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -103,9 +114,17 @@ export class ApiClient {
   }
 
   static async generateExercise(data: { condition: string; targetArea: string; difficulty: string; pacienteId: number }) {
+    const difficultyMap = {
+      easy: 'fácil',
+      medium: 'média',
+      hard: 'difícil'
+    };
+
+    const prompt = `Crie um exercício terapêutico para um paciente com ${data.condition}. O exercício deve focar em ${data.targetArea} e ter dificuldade ${difficultyMap[data.difficulty as keyof typeof difficultyMap] || data.difficulty}.`;
+
     return this.request('/exercises/generate', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({ prompt, pacienteId: data.pacienteId }),
     });
   }
 
@@ -134,7 +153,11 @@ export class ApiClient {
   static async createSession(data: { pacienteId: number; scheduledDate: string; exerciseIds: number[] }) {
     return this.request('/sessions', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        pacienteId: data.pacienteId,
+        scheduledAt: data.scheduledDate,
+        exerciseIds: data.exerciseIds
+      }),
     });
   }
 

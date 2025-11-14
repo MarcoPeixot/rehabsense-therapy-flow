@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -132,6 +133,9 @@ export default function Patients() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Adicionar Novo Paciente</DialogTitle>
+                <DialogDescription>
+                  Cadastre um novo paciente no sistema
+                </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">

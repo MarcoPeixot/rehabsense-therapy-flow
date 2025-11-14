@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -33,10 +34,14 @@ export default function Exercises() {
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
 
   const [manualForm, setManualForm] = useState({
-    name: '',
-    description: '',
-    targetArea: '',
-    duration: '',
+    nome: '',
+    tipoGripe: 'pinça' as 'pinça' | 'gancho' | 'esférica' | 'cilíndrica' | 'lateral',
+    segDuracao: '',
+    pctForca: '',
+    repeticoes: '',
+    segIntervalo: '',
+    lado: 'ambos' as 'direita' | 'esquerda' | 'ambos',
+    observacoes: '',
     pacienteId: '',
   });
 
@@ -73,11 +78,18 @@ export default function Exercises() {
     e.preventDefault();
 
     try {
+      const codigoDSL = `GRIP ${manualForm.tipoGripe} FORCE ${manualForm.pctForca}% DURATION ${manualForm.segDuracao}s REPS ${manualForm.repeticoes}${manualForm.lado !== 'ambos' ? ` SIDE ${manualForm.lado}` : ''}`;
+
       await ApiClient.createExercise({
-        name: manualForm.name,
-        description: manualForm.description,
-        targetArea: manualForm.targetArea,
-        duration: parseInt(manualForm.duration),
+        nome: manualForm.nome,
+        tipoGripe: manualForm.tipoGripe,
+        segDuracao: parseInt(manualForm.segDuracao),
+        pctForca: parseInt(manualForm.pctForca),
+        repeticoes: parseInt(manualForm.repeticoes),
+        segIntervalo: manualForm.segIntervalo ? parseInt(manualForm.segIntervalo) : undefined,
+        lado: manualForm.lado,
+        observacoes: manualForm.observacoes || undefined,
+        codigoDSL,
         pacienteId: parseInt(manualForm.pacienteId),
       });
 
@@ -88,10 +100,14 @@ export default function Exercises() {
 
       setDialogOpen(false);
       setManualForm({
-        name: '',
-        description: '',
-        targetArea: '',
-        duration: '',
+        nome: '',
+        tipoGripe: 'pinça',
+        segDuracao: '',
+        pctForca: '',
+        repeticoes: '',
+        segIntervalo: '',
+        lado: 'ambos',
+        observacoes: '',
         pacienteId: '',
       });
       loadData();
@@ -189,6 +205,9 @@ export default function Exercises() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Criar Exercício Manual</DialogTitle>
+                  <DialogDescription>
+                    Preencha os campos abaixo para criar um novo exercício personalizado
+                  </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleManualSubmit} className="space-y-4">
                   <div className="space-y-2">
@@ -213,48 +232,121 @@ export default function Exercises() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nome do exercício</Label>
+                    <Label htmlFor="nome">Nome do exercício</Label>
                     <Input
-                      id="name"
-                      value={manualForm.name}
+                      id="nome"
+                      value={manualForm.nome}
                       onChange={(e) =>
-                        setManualForm({ ...manualForm, name: e.target.value })
+                        setManualForm({ ...manualForm, nome: e.target.value })
                       }
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="description">Descrição</Label>
+                    <Label htmlFor="tipoGripe">Tipo de preensão</Label>
+                    <Select
+                      value={manualForm.tipoGripe}
+                      onValueChange={(value: any) =>
+                        setManualForm({ ...manualForm, tipoGripe: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pinça">Pinça</SelectItem>
+                        <SelectItem value="gancho">Gancho</SelectItem>
+                        <SelectItem value="esférica">Esférica</SelectItem>
+                        <SelectItem value="cilíndrica">Cilíndrica</SelectItem>
+                        <SelectItem value="lateral">Lateral</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="segDuracao">Duração (segundos)</Label>
+                      <Input
+                        id="segDuracao"
+                        type="number"
+                        min="1"
+                        max="600"
+                        value={manualForm.segDuracao}
+                        onChange={(e) =>
+                          setManualForm({ ...manualForm, segDuracao: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="pctForca">Força (%)</Label>
+                      <Input
+                        id="pctForca"
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={manualForm.pctForca}
+                        onChange={(e) =>
+                          setManualForm({ ...manualForm, pctForca: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="repeticoes">Repetições</Label>
+                      <Input
+                        id="repeticoes"
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={manualForm.repeticoes}
+                        onChange={(e) =>
+                          setManualForm({ ...manualForm, repeticoes: e.target.value })
+                        }
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="segIntervalo">Intervalo (seg)</Label>
+                      <Input
+                        id="segIntervalo"
+                        type="number"
+                        min="0"
+                        max="300"
+                        value={manualForm.segIntervalo}
+                        onChange={(e) =>
+                          setManualForm({ ...manualForm, segIntervalo: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lado">Lado</Label>
+                    <Select
+                      value={manualForm.lado}
+                      onValueChange={(value: any) =>
+                        setManualForm({ ...manualForm, lado: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="direita">Direita</SelectItem>
+                        <SelectItem value="esquerda">Esquerda</SelectItem>
+                        <SelectItem value="ambos">Ambos</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="observacoes">Observações (opcional)</Label>
                     <Textarea
-                      id="description"
-                      value={manualForm.description}
+                      id="observacoes"
+                      value={manualForm.observacoes}
                       onChange={(e) =>
-                        setManualForm({ ...manualForm, description: e.target.value })
+                        setManualForm({ ...manualForm, observacoes: e.target.value })
                       }
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="targetArea">Área alvo</Label>
-                    <Input
-                      id="targetArea"
-                      value={manualForm.targetArea}
-                      onChange={(e) =>
-                        setManualForm({ ...manualForm, targetArea: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="duration">Duração (minutos)</Label>
-                    <Input
-                      id="duration"
-                      type="number"
-                      value={manualForm.duration}
-                      onChange={(e) =>
-                        setManualForm({ ...manualForm, duration: e.target.value })
-                      }
-                      required
                     />
                   </div>
                   <Button type="submit" className="w-full">
@@ -274,6 +366,9 @@ export default function Exercises() {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Gerar Exercício com IA</DialogTitle>
+                  <DialogDescription>
+                    Use inteligência artificial para criar um exercício personalizado
+                  </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleAiSubmit} className="space-y-4">
                   <div className="space-y-2">
@@ -356,24 +451,42 @@ export default function Exercises() {
               <Card key={exercise.id}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-lg font-semibold">
-                    {exercise.name}
+                    {exercise.nome}
                   </CardTitle>
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary/10">
                     <Dumbbell className="h-5 w-5 text-secondary" />
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {exercise.description}
-                  </p>
                   <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Área alvo</p>
-                    <p className="font-medium">{exercise.targetArea}</p>
+                    <p className="text-sm text-muted-foreground">Tipo de preensão</p>
+                    <p className="font-medium capitalize">{exercise.tipoGripe}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Força</p>
+                      <p className="font-medium">{exercise.pctForca}%</p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Repetições</p>
+                      <p className="font-medium">{exercise.repeticoes}x</p>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Clock className="h-4 w-4" />
-                    {exercise.duration} minutos
+                    {exercise.segDuracao}s por repetição
                   </div>
+                  {exercise.lado && (
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Lado</p>
+                      <p className="font-medium capitalize">{exercise.lado}</p>
+                    </div>
+                  )}
+                  {exercise.observacoes && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {exercise.observacoes}
+                    </p>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
