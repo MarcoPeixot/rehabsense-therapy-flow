@@ -16,10 +16,12 @@ import { ApiClient } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Search, User, Trash2, Edit } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Patients() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [patients, setPatients] = useState<any[]>([]);
   const [filteredPatients, setFilteredPatients] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -209,10 +211,13 @@ export default function Patients() {
                     <p className="text-sm text-muted-foreground">Condição</p>
                     <p className="font-medium">{patient.condition}</p>
                   </div>
-                  <div className="flex gap-2 pt-2">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Edit className="mr-1 h-3 w-3" />
-                      Editar
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/patients/${patient.id}/progress`)}
+                    >
+                      Ver Progresso
                     </Button>
                     <Button
                       variant="outline"

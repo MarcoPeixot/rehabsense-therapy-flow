@@ -12,6 +12,9 @@ import Dashboard from "./pages/Dashboard";
 import Patients from "./pages/Patients";
 import Exercises from "./pages/Exercises";
 import Sessions from "./pages/Sessions";
+import SessionExecution from "./pages/SessionExecution";
+import SessionReport from "./pages/SessionReport";
+import PatientProgress from "./pages/PatientProgress";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +47,14 @@ const App = () => (
               }
             />
             <Route
+              path="/patients/:id/progress"
+              element={
+                <ProtectedRoute>
+                  <PatientProgress />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/exercises"
               element={
                 <ProtectedRoute>
@@ -56,6 +67,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Sessions />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sessions/:id/execute"
+              element={
+                <ProtectedRoute>
+                  <SessionExecution />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sessions/:id/report"
+              element={
+                <ProtectedRoute>
+                  <SessionReport />
                 </ProtectedRoute>
               }
             />

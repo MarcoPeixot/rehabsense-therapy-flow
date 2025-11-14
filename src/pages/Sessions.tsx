@@ -22,9 +22,11 @@ import {
 import { ApiClient } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Calendar as CalendarIcon, Play, CheckCircle, XCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Sessions() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [sessions, setSessions] = useState<any[]>([]);
   const [patients, setPatients] = useState<any[]>([]);
   const [exercises, setExercises] = useState<any[]>([]);
@@ -109,7 +111,7 @@ export default function Sessions() {
 
   const handleCompleteSession = async (id: number) => {
     try {
-      await ApiClient.completeSession(id, {});
+      await ApiClient.completeSession(id);
       toast({
         title: 'Sessão concluída!',
       });
