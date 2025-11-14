@@ -182,10 +182,9 @@ export class ApiClient {
     });
   }
 
-  static async completeSession(id: number, data: { notes?: string }) {
+  static async completeSession(id: number) {
     return this.request(`/sessions/${id}/complete`, {
       method: 'PATCH',
-      body: JSON.stringify(data),
     });
   }
 
@@ -204,5 +203,53 @@ export class ApiClient {
     return this.request(`/sessions/${id}`, {
       method: 'DELETE',
     });
+  }
+
+  // Session Exercise Completion
+  static async completeSessionExercise(
+    sessionId: number, 
+    exerciseId: number, 
+    data: { status: string; metrics?: any }
+  ) {
+    return this.request(`/sessions/${sessionId}/exercises/${exerciseId}/complete`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Sensor Readings
+  static async saveSensorReading(
+    sessionId: number, 
+    exerciseId: number, 
+    data: any
+  ) {
+    return this.request(`/sessions/${sessionId}/exercises/${exerciseId}/sensor-reading`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  static async saveSensorReadings(
+    sessionId: number, 
+    exerciseId: number, 
+    readings: any[]
+  ) {
+    return this.request(`/sessions/${sessionId}/exercises/${exerciseId}/sensor-readings`, {
+      method: 'POST',
+      body: JSON.stringify({ readings }),
+    });
+  }
+
+  static async getSensorReadings(sessionId: number, exerciseId: number) {
+    return this.request<any[]>(`/sessions/${sessionId}/exercises/${exerciseId}/sensor-readings`);
+  }
+
+  // Patient specific data
+  static async getPatientSessions(patientId: number) {
+    return this.request<any[]>(`/pacientes/${patientId}/sessions`);
+  }
+
+  static async getPatientExercises(patientId: number) {
+    return this.request<any[]>(`/pacientes/${patientId}/exercises`);
   }
 }
